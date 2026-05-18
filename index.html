@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arraial - Reserva de Mesas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { color: #e67e22; margin-bottom: 5px; }
+        .subtitulo { color: #7f8c8d; margin-bottom: 20px; }
+
+        /* Container do Mapa (Usa sua imagem de fundo) */
+        .mapa-container {
+            position: relative;
+            width: 600px;
+            height: 800px;
+            background-image: url('mapa.png');
+            background-size: 100% 100%;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        /* Setores das Mesas (Posicionados sobre a área cinza) */
+        .setor {
+            position: absolute;
+            display: grid;
+            gap: 5px;
+        }
+
+        /* Corredor Esquerdo Cinza */
+        #setor-esquerdo {
+            top: 18%; left: 13%; width: 14%; height: 32%;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* Corredor Direito Cinza */
+        #setor-direito {
+            top: 28%; left: 73%; width: 16%; height: 22%;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* Área Grande de Baixo Cinza */
+        #setor-baixo {
+            top: 51%; left: 13%; width: 76%; height: 36%;
+            grid-template-columns: repeat(8, 1fr);
+        }
+
+        /* Estilo dos Botões das Mesas */
+        .mesa {
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            min-height: 25px;
+        }
+        .mesa:hover { transform: scale(1.1); z-index: 10; }
+
+        /* Cores de acordo com o Status do Python */
+        .livre { background-color: #2ecc71; }
+        .pendente_pix { background-color: #f1c40f; color: black; }
+        .pendente_dinheiro { background-color: #e67e22; }
+        .ocupada { background-color: #e74c3c; cursor: not-allowed; }
+
+        /* Janela Modal de Reserva */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 8px;
+            width: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .modal-content h2 { margin-top: 0; color: #d35400; }
+        .modal-content input, .modal-content select {
+            width: 100%; padding: 10px; margin: 10px 0;
+            border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+        }
+        .btn-enviar {
+            width: 100%; padding: 12px; background: #2ecc71;
+            color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
+        }
+        .btn-fechar {
+            background: #7f8c8d; margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Reserva de Mesas - Arraial 🌽</h1>
+    <p class="subtitulo">Selecione uma mesa verde no mapa para iniciar sua reserva.</p>
+
+    <div class="mapa-container">
+        <div id="setor-esquerdo" class="setor"></div>
+        <div id="setor-direito" class="setor"></div>
+        <div id="setor-baixo" class="setor"></div>
+    </div>
+
+    <div id="formulario-modal" class="modal">
+        <div class="modal-content">
+            <h2>Reservar Mesa <span id="num-mesa-titulo">X</span></h2>
+            <p>Valor: R$ 10,00</p>
+            <input type="text" id="nome" placeholder="Seu Nome Completo" required>
+            <input type="tel" id="telefone" placeholder="Seu Telefone/WhatsApp" required>
+            <label>Forma de Pagamento:</label>
+            <select id="forma_pagamento">
+                <option value="pix">Pagar via PIX</option>
+                <option value="dinheiro">Pagar em Dinheiro (na Secretaria)</option>
+            </select>
+            <button class="btn-enviar" onclick="enviarReserva()">Confirmar Reserva</button>
+            <button class="btn-enviar btn-fechar" onclick="fecharModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        // --- MENSAGENS DE DIAGNÓSTICO NO CONSOLE ---
+        console.log("1. [DEBUG] O arquivo HTML foi lido e o JavaScript começou a rodar!");
+
+        const API_URL = "http://127.0.0.1:5000";
+        let mesaSelecionada = null;
+
+        async function carregarMesas() {
+            console.log("2. [DEBUG] A função carregarMesas() foi disparada.");
+            
+            document.getElementById('setor-esquerdo').innerHTML = '';
+            document.getElementById('setor-direito').innerHTML = '';
+            document.getElementById('setor-baixo').innerHTML = '';
+
+            try {
+                console.log("3. [DEBUG] Tentando conectar com o Python em: " + API_URL + "/mesas");
+                const resposta = await fetch(`${API_URL}/mesas`);
+                const mesas = await resposta.json();
+                
+                console.log("4. [DEBUG] Dados recebidos do Python com sucesso! Total de mesas: " + mesas.length);
+
+                mesas.forEach(mesa => {
+                    const botao = document.createElement('button');
+                    botao.className = `mesa ${mesa.status}`;
+                    botao.innerText = mesa.id;
+                    
+                    if (mesa.status === 'livre') {
+                        botao.onclick = () => abrirModal(mesa.id);
+                    } else {
+                        botao.disabled = true;
+                    }
+
+                    if (mesa.id <= 10) {
+                        document.getElementById('setor-esquerdo').appendChild(botao);
+                    } else if (mesa.id <= 20) {
+                        document.getElementById('setor-direito').appendChild(botao);
+                    } else {
+                        document.getElementById('setor-baixo').appendChild(botao);
+                    }
+                });
+                console.log("5. [DEBUG] Todos os botões foram injetados na tela.");
+
+            } catch (erro) {
+                console.error("![ERRO CRÍTICO] Falha ao buscar dados do Python:", erro);
+            }
+        }
+
+        function abrirModal(id) {
+            mesaSelecionada = id;
+            document.getElementById('num-mesa-titulo').innerText = id;
+            document.getElementById('formulario-modal').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('formulario-modal').style.display = 'none';
+        }
+
+        async function enviarReserva() {
+            const nome = document.getElementById('nome').value;
+            const telefone = document.getElementById('telefone').value;
+            const forma_pagamento = document.getElementById('forma_pagamento').value;
+
+            if (!nome || !telefone) {
+                alert("Por favor, preencha todos os campos!");
+                return;
+            }
+
+            const dados = { nome, telefone, forma_pagamento };
+
+            try {
+                const resposta = await fetch(`${API_URL}/reservar/${mesaSelecionada}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await resposta.json();
+
+                if (resposta.ok) {
+                    fecharModal();
+                    if (forma_pagamento === 'pix') {
+                        alert(`Mesa ${mesaSelecionada} pré-reservada!\n\nFaça o PIX para a chave: helen.maracunha@gmail.com no valor de R$10,00 e envie o comprovante.`);
+                    } else {
+                        alert(`Mesa ${mesaSelecionada} reservada em Dinheiro!\n\nCompareça à secretaria do arraial e informe seu nome para realizar o pagamento.`);
+                    }
+                    carregarMesas(); 
+                } else {
+                    alert("Erro: " + resultado.mensagem);
+                }
+            } catch (erro) {
+                alert("Erro ao enviar dados ao servidor.");
+            }
+        }
+
+        // Executa a carga das mesas
+        carregarMesas();
+    </script>
+</body>
+</html>
