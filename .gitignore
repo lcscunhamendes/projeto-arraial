@@ -11,5 +11,3 @@ __pycache__/
 
 # Configurações locais do VS Code
 .vscode/
-
-requests
