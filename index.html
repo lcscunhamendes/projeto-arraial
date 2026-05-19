@@ -54,7 +54,6 @@
             overflow: hidden;
         }
 
-        /* Auréola de luz */
         .aureola {
             position: absolute;
             top: 0; left: 50%;
@@ -118,7 +117,6 @@
             margin-bottom: 4px;
         }
 
-        /* Badge de data */
         .badge-data {
             display: inline-flex;
             align-items: center;
@@ -225,6 +223,7 @@
             transition: transform 0.15s, box-shadow 0.15s;
             min-height: 25px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            position: relative;
         }
 
         .mesa:hover:not(:disabled) {
@@ -233,10 +232,42 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
 
+        /* Estilo do balãozinho para a minha mesa */
+        .mesa[data-info]:hover::after {
+            content: attr(data-info);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            border: 1px solid var(--borda-ouro);
+            color: var(--texto);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            white-space: nowrap;
+            z-index: 50;
+            pointer-events: none;
+            text-shadow: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
         .livre             { background: linear-gradient(135deg,#2ecc71,#27ae60); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3); }
         .pendente_pix      { background: linear-gradient(135deg,#f4d03f,#d4ac0d); color:#1a0a00; box-shadow: inset 0 1px 0 rgba(255,255,255,0.3); }
         .pendente_dinheiro { background: linear-gradient(135deg,#e67e22,#ca6f1e); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3); }
         .ocupada           { background: linear-gradient(135deg,#e74c3c,#c0392b); cursor:not-allowed; opacity:0.85; }
+
+        /* Borda brilhante na mesa do próprio usuário */
+        .minha-mesa {
+            border: 2px solid var(--amarelo) !important;
+            box-shadow: 0 0 14px 3px rgba(244,208,63,0.6) !important;
+            animation: pulsarFiltro 2s infinite alternate;
+        }
+        @keyframes pulsarFiltro {
+            from { filter: brightness(1); }
+            to   { filter: brightness(1.2); }
+        }
 
         /* ===== MODAL ===== */
         .modal {
@@ -309,6 +340,7 @@
         .modal-content input:focus,
         .modal-content select:focus { outline: none; border-color: var(--amarelo); }
         .modal-content select option { background: var(--card); }
+        .modal-content input[readonly] { opacity: 0.6; cursor: not-allowed; }
 
         #area-qrcode {
             display: none;
@@ -355,7 +387,6 @@
         }
         .btn-fechar:hover { background: rgba(255,255,255,0.09); }
 
-        /* Loading */
         .loading-overlay {
             position: absolute;
             inset: 0;
@@ -402,28 +433,11 @@
 
     <header>
         <div class="aureola"></div>
-
-        <!-- Salve o arquivo da imagem enviada como "nossa_senhora.png" na raiz do projeto -->
-        <img
-            src="nossa_senhora.png"
-            alt="Nossa Senhora de Fátima"
-            class="nossa-senhora-img"
-            onerror="this.style.fontSize='3rem';this.outerHTML='<div style=\'font-size:3.5rem;margin-top:20px\'>🕊️</div>'"
-        >
-
+        <img src="nossa_senhora.png" alt="Nossa Senhora de Fátima" class="nossa-senhora-img" onerror="this.style.fontSize='3rem';this.outerHTML='<div style=\'font-size:3.5rem;margin-top:20px\'>🕊️</div>'">
         <div class="header-textos">
             <span class="subtag">✦ Arraial Beneficente da Paróquia ✦</span>
-            <h1>
-                <em>Arraial de</em>
-                Nossa Senhora
-            </h1>
-
-            <div class="badge-data">
-                📅 30 de Maio de 2025
-                <div class="sep"></div>
-                <span class="local">Reserve sua mesa</span>
-            </div>
-
+            <h1><em>Arraial de</em> Nossa Senhora</h1>
+            <div class="badge-data">📅 30 de Maio de 2025 <div class="sep"></div><span class="local">Reserve sua mesa</span></div>
             <p class="instrucao">Toque numa mesa 🟢 verde no mapa para reservar</p>
         </div>
     </header>
@@ -448,17 +462,33 @@
 
     <footer>🕊️ Que Nossa Senhora abençoe a todos · Arraial 30/05</footer>
 
-    <!-- MODAL DE RESERVA -->
+    <div id="login-modal" class="modal" style="z-index: 300;">
+        <div class="modal-content">
+            <h2>Bem-vindo(a)! 🌽</h2>
+            <p class="preco" style="margin-bottom: 18px;">Identifique-se para ver suas mesas ou realizar reservas.</p>
+
+            <label class="campo-label" for="login-nome">👤 Primeiro Nome</label>
+            <input type="text" id="login-nome" placeholder="Ex: Maria" autocomplete="off">
+
+            <label class="campo-label" for="login-telefone">📱 WhatsApp</label>
+            <input type="tel" id="login-telefone" placeholder="(92) 99999-9999" oninput="mascaraTelefone(this)">
+
+            <div class="modal-btns">
+                <button class="btn-confirmar" onclick="entrarNoSite()">Entrar no Arraial</button>
+            </div>
+        </div>
+    </div>
+
     <div id="formulario-modal" class="modal" role="dialog" aria-modal="true">
         <div class="modal-content">
             <h2>Mesa <span id="num-mesa-titulo">—</span></h2>
             <p class="preco">💰 Valor: R$ 10,00 · Arraial 30/05</p>
 
             <label class="campo-label" for="nome">👤 Seu Nome</label>
-            <input type="text" id="nome" placeholder="Nome completo" autocomplete="name">
+            <input type="text" id="nome" readonly>
 
             <label class="campo-label" for="telefone">📱 WhatsApp</label>
-            <input type="tel" id="telefone" placeholder="(92) 9 9999-9999" autocomplete="tel">
+            <input type="tel" id="telefone" readonly>
 
             <label class="campo-label" for="forma_pagamento">💳 Forma de Pagamento</label>
             <select id="forma_pagamento" onchange="mostrarQrCode()">
@@ -485,6 +515,51 @@
     <script>
         const API_URL = "https://lucao123.pythonanywhere.com";
         let mesaSelecionada = null;
+        let usuarioAtual = JSON.parse(localStorage.getItem('usuario_arraial')) || null;
+
+        // Máscara reativa para padronizar telefones em tempo real
+        function mascaraTelefone(input) {
+            let num = input.value.replace(/\D/g, '');
+            if (num.length > 11) num = num.slice(0, 11);
+
+            if (num.length > 2) {
+                num = `(${num.slice(0,2)}) ${num.slice(2)}`;
+            }
+            if (num.length > 9) {
+                num = `${num.slice(0,10)}-${num.slice(10)}`;
+            }
+            input.value = num;
+        }
+
+        // Função de inicialização: confere se o usuário já fez "login" antes
+        function checarSessao() {
+            if (!usuarioAtual) {
+                document.getElementById('login-modal').style.display = 'flex';
+                document.getElementById('loading').style.display = 'none';
+            } else {
+                carregarMesas();
+            }
+        }
+
+        function entrarNoSite() {
+            const nomeDigitado = document.getElementById('login-nome').value.trim();
+            const telDigitado = document.getElementById('login-telefone').value.trim();
+
+            // Valida se pegou apenas o primeiro nome e se o telefone tem os dígitos necessários
+            const primeiroNome = nomeDigitado.split(' ')[0];
+            const numerosApenas = telDigitado.replace(/\D/g, '');
+
+            if (primeiroNome.length < 2 || numerosApenas.length < 10) {
+                alert("⚠️ Por favor, insira seu primeiro nome e seu número de WhatsApp com DDD válido.");
+                return;
+            }
+
+            usuarioAtual = { nome: primeiroNome, telefone: telDigitado };
+            localStorage.setItem('usuario_arraial', JSON.stringify(usuarioAtual));
+
+            document.getElementById('login-modal').style.display = 'none';
+            carregarMesas();
+        }
 
         function mostrarQrCode() {
             const forma = document.getElementById('forma_pagamento').value;
@@ -506,10 +581,17 @@
                     const botao = document.createElement('button');
                     botao.className = `mesa ${mesa.status}`;
                     botao.innerText = mesa.id;
-                    botao.title = `Mesa ${mesa.id} — ${mesa.status.replace('_',' ')}`;
 
-                    if (mesa.status === 'livre') botao.onclick = () => abrirModal(mesa.id);
-                    else botao.disabled = true;
+                    // Se a mesa possuir o mesmo telefone cadastrado na sessão local
+                    if (usuarioAtual && mesa.telefone === usuarioAtual.telefone) {
+                        botao.classList.add('minha-mesa');
+                        let txtStatus = mesa.status === 'ocupada' ? '✅ Confirmada' : '⏳ Aguardando Validação';
+                        botao.setAttribute('data-info', `Sua mesa ${mesa.id} (${txtStatus})`);
+                    } else if (mesa.status === 'livre') {
+                        botao.onclick = () => abrirModal(mesa.id);
+                    } else {
+                        botao.disabled = true;
+                    }
 
                     if (mesa.id <= 10)       document.getElementById('setor-esquerdo').appendChild(botao);
                     else if (mesa.id <= 20)  document.getElementById('setor-direito').appendChild(botao);
@@ -526,8 +608,11 @@
         function abrirModal(id) {
             mesaSelecionada = id;
             document.getElementById('num-mesa-titulo').innerText = id;
-            document.getElementById('nome').value = '';
-            document.getElementById('telefone').value = '';
+
+            // Atribui os dados travados para leitura baseados na sessão logada
+            document.getElementById('nome').value = usuarioAtual.nome;
+            document.getElementById('telefone').value = usuarioAtual.telefone;
+
             document.getElementById('forma_pagamento').value = 'pix';
             mostrarQrCode();
             document.getElementById('formulario-modal').style.display = 'flex';
@@ -545,11 +630,6 @@
             const nome = document.getElementById('nome').value.trim();
             const telefone = document.getElementById('telefone').value.trim();
             const forma_pagamento = document.getElementById('forma_pagamento').value;
-
-            if (!nome || !telefone) {
-                alert("⚠️ Preencha seu nome e telefone para continuar.");
-                return;
-            }
 
             try {
                 const resposta = await fetch(`${API_URL}/reservar/${mesaSelecionada}`, {
@@ -575,7 +655,8 @@
             }
         }
 
-        carregarMesas();
+        // Inicia o fluxo chamando o validador de sessão
+        checarSessao();
     </script>
 </body>
 </html>
