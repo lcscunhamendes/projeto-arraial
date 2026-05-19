@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin — Arraial de Nossa Senhora 30/05</title>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --amarelo:    #f4d03f;
+            --laranja:    #e67e22;
+            --vermelho:   #c0392b;
+            --verde:      #27ae60;
+            --verde-claro:#2ecc71;
+            --azul-maria: #c8d8f0;
+            --fundo:      #0d0820;
+            --painel:     #170e2e;
+            --card:       #1e1440;
+            --borda:      rgba(200,216,240,0.14);
+            --borda-ouro: rgba(244,208,63,0.2);
+            --texto:      #f0ecff;
+            --subtexto:   #a99dbf;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--fundo);
+            color: var(--texto);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle, rgba(200,216,240,0.05) 1px, transparent 1px),
+                radial-gradient(ellipse at 15% 0%, rgba(244,208,63,0.07) 0%, transparent 50%);
+            background-size: 24px 24px, 100% 100%;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 26px;
+            border-bottom: 1px solid var(--borda);
+            background: linear-gradient(90deg, rgba(244,208,63,0.05) 0%, transparent 100%);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header-esq {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-ns-img {
+            width: 48px;
+            height: auto;
+            filter: drop-shadow(0 2px 8px rgba(244,208,63,0.4));
+            flex-shrink: 0;
+        }
+
+        .header-txt h1 {
+            font-family: 'Lobster', cursive;
+            color: var(--amarelo);
+            font-size: clamp(1.2rem, 3vw, 1.7rem);
+            text-shadow: 1px 1px 0 rgba(80,40,0,0.5);
+            line-height: 1.1;
+        }
+
+        .header-txt p {
+            color: var(--subtexto);
+            font-size: 0.76rem;
+            font-weight: 700;
+            margin-top: 2px;
+            letter-spacing: 0.3px;
+        }
+
+        .header-txt .data-pill {
+            display: inline-block;
+            margin-top: 4px;
+            background: rgba(244,208,63,0.1);
+            border: 1px solid var(--borda-ouro);
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--amarelo);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-atualizar {
+            padding: 10px 18px;
+            background: rgba(200,216,240,0.08);
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            color: var(--azul-maria);
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-atualizar:hover { background: rgba(200,216,240,0.15); }
+
+        /* ===== ABAS ===== */
+        .abas {
+            display: flex;
+            padding: 18px 26px 0;
+            border-bottom: 1px solid var(--borda);
+            gap: 0;
+        }
+
+        .aba {
+            padding: 10px 22px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--subtexto);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .aba.ativa { color: var(--amarelo); border-bottom-color: var(--amarelo); }
+        .aba:hover:not(.ativa) { color: var(--texto); }
+
+        /* ===== MAIN ===== */
+        main { padding: 22px 26px; max-width: 1100px; }
+
+        /* ===== CARDS RESUMO ===== */
+        .resumo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .resumo-card {
+            background: var(--card);
+            border: 1px solid var(--borda);
+            border-radius: 12px;
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        .num { font-size: 2.1rem; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+        .rot { font-size: 0.71rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--subtexto); }
+
+        .num-livre    { color: var(--verde-claro); }
+        .num-pix      { color: var(--amarelo); }
+        .num-dinheiro { color: var(--laranja); }
+        .num-ocupada  { color: #e74c3c; }
+
+        /* ===== SEÇÕES ===== */
+        #secao-mapa   { display: block; }
+        #secao-tabela { display: none; }
+
+        .secao-titulo {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--subtexto);
+            margin-bottom: 14px;
+        }
+
+        /* ===== MAPA ADMIN ===== */
+        .mapa-admin-wrapper { max-width: 500px; }
+
+        .mapa-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            background-image: url('mapa.png');
+            background-size: 100% 100%;
+            border-radius: 14px;
+            box-shadow: 0 0 0 2px var(--borda), 0 16px 32px rgba(0,0,0,0.5);
+        }
+
+        .setor { position: absolute; display: grid; gap: 5px; }
+
+        #a-setor-esquerdo {
+            top: 18%; left: 13%; width: 14%; height: 32%;
+            grid-template-columns: repeat(2, 1fr);
+        }
+        #a-setor-direito {
+            top: 28%; left: 73%; width: 16%; height: 22%;
+            grid-template-columns: repeat(2, 1fr);
+        }
+        #a-setor-baixo {
+            top: 51%; left: 13%; width: 76%; height: 36%;
+            grid-template-columns: repeat(8, 1fr);
+        }
+
+        .mesa-admin {
+            border: none;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 900;
+            font-family: 'Nunito', sans-serif;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 25px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            cursor: default;
+            transition: transform 0.15s;
+            position: relative;
+        }
+
+        .mesa-admin[data-info]:hover::after {
+            content: attr(data-info);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            border: 1px solid var(--borda-ouro);
+            color: var(--texto);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            z-index: 50;
+            pointer-events: none;
+            line-height: 1.5;
+            text-align: center;
+            text-shadow: none;
+        }
+
+        .mesa-admin:hover { transform: scale(1.15); z-index: 10; }
+
+        .m-livre             { background: linear-gradient(135deg,#2ecc71,#27ae60); }
+        .m-pendente_pix      { background: linear-gradient(135deg,#f4d03f,#d4ac0d); color:#1a0a00; }
+        .m-pendente_dinheiro { background: linear-gradient(135deg,#e67e22,#ca6f1e); }
+        .m-ocupada           { background: linear-gradient(135deg,#e74c3c,#c0392b); }
+
+        .legenda-mapa {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .leg { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; font-weight: 700; color: var(--subtexto); text-transform: uppercase; letter-spacing: 0.4px; }
+        .leg-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+        /* ===== TABELA ===== */
+        .tabela-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid var(--borda); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+
+        thead th {
+            background: var(--card);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.71rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--subtexto);
+            white-space: nowrap;
+        }
+
+        tbody tr { border-top: 1px solid var(--borda); transition: background 0.15s; }
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+        td { padding: 12px 16px; vertical-align: middle; }
+
+        .mesa-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 6px;
+            font-weight: 900;
+            font-size: 0.84rem;
+        }
+
+        .badge-pix      { background: rgba(244,208,63,0.13); color: var(--amarelo); }
+        .badge-dinheiro { background: rgba(230,126,34,0.13); color: var(--laranja); }
+        .badge-ocupada  { background: rgba(231,76,60,0.13); color: #e74c3c; }
+
+        .status-pill {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pill-pendente_pix      { background: rgba(244,208,63,0.13); color: var(--amarelo); }
+        .pill-pendente_dinheiro { background: rgba(230,126,34,0.13); color: var(--laranja); }
+        .pill-ocupada           { background: rgba(231,76,60,0.13); color: #e74c3c; }
+
+        .acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .btn-aprovar, .btn-cancelar {
+            padding: 7px 12px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.77rem;
+            font-weight: 800;
+            transition: opacity 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .btn-aprovar  { background: linear-gradient(135deg,#2ecc71,#27ae60); color: white; }
+        .btn-cancelar { background: linear-gradient(135deg,#e74c3c,#c0392b); color: white; }
+        .btn-aprovar:hover, .btn-cancelar:hover { opacity: 0.85; transform: translateY(-1px); }
+
+        .sem-dados {
+            text-align: center;
+            padding: 40px;
+            color: var(--subtexto);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 560px) {
+            main { padding: 14px; }
+            .abas { padding: 14px 14px 0; }
+            header { padding: 12px 14px; }
+            .setor { gap: 3px; }
+            .mesa-admin { font-size: 7px; min-height: unset; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-esq">
+            <!-- Mesma imagem de Nossa Senhora usada no index -->
+            <img
+                src="nossa_senhora.png"
+                alt="Nossa Senhora"
+                class="header-ns-img"
+                onerror="this.outerHTML='<span style=\'font-size:2rem\'>🕊️</span>'"
+            >
+            <div class="header-txt">
+                <h1>Painel do Coordenador</h1>
+                <p>Arraial de Nossa Senhora · Gestão de Mesas</p>
+                <span class="data-pill">📅 30 de Maio de 2025</span>
+            </div>
+        </div>
+        <button class="btn-atualizar" onclick="carregarTudo()">🔄 Atualizar</button>
+    </header>
+
+    <div class="abas">
+        <button class="aba ativa" id="aba-mapa"   onclick="trocarAba('mapa')"  >🗺️ Mapa de Mesas</button>
+        <button class="aba"       id="aba-tabela" onclick="trocarAba('tabela')">📋 Lista de Reservas</button>
+    </div>
+
+    <main>
+        <!-- Cards resumo -->
+        <div class="resumo">
+            <div class="resumo-card"><div class="num num-livre"    id="cnt-livre"   >—</div><div class="rot">🟢 Livres</div></div>
+            <div class="resumo-card"><div class="num num-pix"      id="cnt-pix"     >—</div><div class="rot">🟡 Aguard. PIX</div></div>
+            <div class="resumo-card"><div class="num num-dinheiro" id="cnt-dinheiro">—</div><div class="rot">🟠 Aguard. Din.</div></div>
+            <div class="resumo-card"><div class="num num-ocupada"  id="cnt-ocupada" >—</div><div class="rot">🔴 Ocupadas</div></div>
+        </div>
+
+        <!-- ABA: MAPA -->
+        <div id="secao-mapa">
+            <p class="secao-titulo">🗺️ Mapa Visual — passe o mouse sobre uma mesa para ver o cliente</p>
+            <div class="mapa-admin-wrapper">
+                <div class="mapa-container">
+                    <div id="a-setor-esquerdo" class="setor"></div>
+                    <div id="a-setor-direito"  class="setor"></div>
+                    <div id="a-setor-baixo"    class="setor"></div>
+                </div>
+                <div class="legenda-mapa">
+                    <div class="leg"><div class="leg-dot" style="background:linear-gradient(135deg,#2ecc71,#27ae60)"></div>Livre</div>
+                    <div class="leg"><div class="leg-dot" style="background:linear-gradient(135deg,#f4d03f,#d4ac0d)"></div>Aguard. PIX</div>
+                    <div class="leg"><div class="leg-dot" style="background:linear-gradient(135deg,#e67e22,#ca6f1e)"></div>Aguard. Dinheiro</div>
+                    <div class="leg"><div class="leg-dot" style="background:linear-gradient(135deg,#e74c3c,#c0392b)"></div>Ocupada</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: TABELA -->
+        <div id="secao-tabela">
+            <p class="secao-titulo">📋 Mesas reservadas ou ocupadas</p>
+            <div class="tabela-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mesa</th>
+                            <th>Cliente</th>
+                            <th>Telefone</th>
+                            <th>Pagamento</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-mesas">
+                        <tr><td colspan="6" class="sem-dados">Carregando…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "https://lucao123.pythonanywhere.com";
+        let senhaAdmin = prompt("🔒 Digite a senha do Coordenador:");
+
+        function trocarAba(aba) {
+            document.getElementById('secao-mapa').style.display   = aba === 'mapa'   ? 'block' : 'none';
+            document.getElementById('secao-tabela').style.display = aba === 'tabela' ? 'block' : 'none';
+            document.getElementById('aba-mapa').classList.toggle('ativa',   aba === 'mapa');
+            document.getElementById('aba-tabela').classList.toggle('ativa', aba === 'tabela');
+        }
+
+        async function carregarTudo() {
+            try {
+                const resposta = await fetch(`${API_URL}/mesas`);
+                const mesas = await resposta.json();
+                atualizarResumo(mesas);
+                renderizarMapa(mesas);
+                renderizarTabela(mesas);
+            } catch {
+                alert("❌ Erro ao conectar com o servidor.");
+            }
+        }
+
+        function atualizarResumo(mesas) {
+            document.getElementById('cnt-livre').textContent    = mesas.filter(m => m.status === 'livre').length;
+            document.getElementById('cnt-pix').textContent      = mesas.filter(m => m.status === 'pendente_pix').length;
+            document.getElementById('cnt-dinheiro').textContent = mesas.filter(m => m.status === 'pendente_dinheiro').length;
+            document.getElementById('cnt-ocupada').textContent  = mesas.filter(m => m.status === 'ocupada').length;
+        }
+
+        function renderizarMapa(mesas) {
+            ['a-setor-esquerdo','a-setor-direito','a-setor-baixo'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+
+            mesas.forEach(mesa => {
+                const btn = document.createElement('button');
+                btn.className = `mesa-admin m-${mesa.status}`;
+                btn.textContent = mesa.id;
+
+                let info = `Mesa ${mesa.id}`;
+                if (mesa.nome_cliente) {
+                    info += `\n${mesa.nome_cliente}`;
+                    if (mesa.telefone) info += `\n${mesa.telefone}`;
+                    if (mesa.forma_pagamento) info += `\n${mesa.forma_pagamento.toUpperCase()}`;
+                }
+                btn.setAttribute('data-info', info);
+                btn.title = info.replace(/\n/g, ' | ');
+
+                if (mesa.id <= 10)       document.getElementById('a-setor-esquerdo').appendChild(btn);
+                else if (mesa.id <= 20)  document.getElementById('a-setor-direito').appendChild(btn);
+                else                     document.getElementById('a-setor-baixo').appendChild(btn);
+            });
+        }
+
+        function renderizarTabela(mesas) {
+            const tbody = document.getElementById('tabela-mesas');
+            tbody.innerHTML = '';
+
+            const ocupadas = mesas.filter(m => m.status !== 'livre');
+
+            if (ocupadas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="sem-dados">🙏 Nenhuma mesa reservada no momento.</td></tr>';
+                return;
+            }
+
+            const badgeClass = { pendente_pix:'badge-pix', pendente_dinheiro:'badge-dinheiro', ocupada:'badge-ocupada' };
+            const pillClass  = { pendente_pix:'pill-pendente_pix', pendente_dinheiro:'pill-pendente_dinheiro', ocupada:'pill-ocupada' };
+            const statusLabel= { pendente_pix:'Aguard. PIX', pendente_dinheiro:'Aguard. Din.', ocupada:'Ocupada' };
+            const pagIcons   = { pix:'📲 PIX', dinheiro:'💵 Dinheiro' };
+
+            ocupadas.forEach(mesa => {
+                const tr = document.createElement('tr');
+
+                let acoes = `<button class="btn-cancelar" onclick="liberarMesa(${mesa.id})">❌ Cancelar</button>`;
+                if (mesa.status === 'pendente_dinheiro' || mesa.status === 'pendente_pix') {
+                    acoes = `<button class="btn-aprovar" onclick="confirmarMesa(${mesa.id})">✅ Aprovar</button>` + acoes;
+                }
+
+                tr.innerHTML = `
+                    <td><span class="mesa-badge ${badgeClass[mesa.status]||''}">${mesa.id}</span></td>
+                    <td>${mesa.nome_cliente || '<span style="color:var(--subtexto)">—</span>'}</td>
+                    <td>${mesa.telefone    || '<span style="color:var(--subtexto)">—</span>'}</td>
+                    <td>${pagIcons[mesa.forma_pagamento] || '—'}</td>
+                    <td><span class="status-pill ${pillClass[mesa.status]||''}">${statusLabel[mesa.status]||mesa.status}</span></td>
+                    <td><div class="acoes">${acoes}</div></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function confirmarMesa(id) {
+            if (!confirm(`✅ Confirmar pagamento da Mesa ${id}?`)) return;
+            try {
+                const r = await fetch(`${API_URL}/admin/confirmar/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha: senhaAdmin })
+                });
+                if (r.ok) carregarTudo();
+                else alert("❌ Ação negada: senha incorreta!");
+            } catch { alert("Erro ao confirmar mesa."); }
+        }
+
+        async function liberarMesa(id) {
+            if (!confirm(`❌ Cancelar reserva e liberar Mesa ${id}?`)) return;
+            try {
+                const r = await fetch(`${API_URL}/admin/liberar/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha: senhaAdmin })
+                });
+                if (r.ok) carregarTudo();
+                else alert("❌ Ação negada: senha incorreta!");
+            } catch { alert("Erro ao liberar mesa."); }
+        }
+
+        carregarTudo();
+    </script>
+</body>
+</html>
